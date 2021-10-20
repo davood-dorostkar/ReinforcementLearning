@@ -1,0 +1,103 @@
+########################################################
+# NVIDIA CUDA Toolkit 9.1 installation on Ubuntu 20.04 #
+#						       #
+# written and tested by  C. Casasgranda in 2021        #
+# Bachelor student at the                              #
+# Konstanz University of Applied Sciences              #
+########################################################
+
+Disclaimer: In case of failure deactivate secure-boot on your BIOS
+
+# 1. remove old installation
+$ sudo apt-get remove nvidia-*
+$ sudo apt-get remove cuda*
+$ sudo apt-get remove libcuff*
+
+# 2. install NVIDIA driver
+$ sudo modprobe -r nouveau
+$ sudo apt-get install nvidia-driver-390 nvidia-headless-390 nvidia-utils-390
+$ sudo modprobe -i nvidia
+
+
+###############################
+# install nvidia CUDA toolbox #
+###############################
+
+# 3. download toolbox
+$ cd /tmp/
+
+$ curl -LO https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux
+$ curl -LO https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux
+$ curl -LO https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/2/cuda_9.1.85.2_linux
+$ curl -LO https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/3/cuda_9.1.85.3_linux
+
+# 4. install CUDA toolbox
+$ sudo sh cuda_9.1.85_387.26_linux --override --toolkit --silent
+
+# 5. install the patches
+$ sudo sh cuda_9.1.85.1_linux --accept-eula --silent
+$ sudo sh cuda_9.1.85.2_linux --accept-eula --silent
+$ sudo sh cuda_9.1.85.3_linux --accept-eula --silent
+
+# 6. set system wide paths
+$ echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/local/cuda/bin"' | sudo tee /etc/environment
+$ echo /usr/local/cuda-9.1/lib64 | sudo tee /etc/ld.so.conf.d/cuda-9.1.conf
+$ sudo ldconfig
+
+# 7. check installation
+$ sudo reboot
+$ nvidia-smi 	
+>> 	returns YOUR GPU
+
+$ nvcc --version
+>>	nvcc: NVIDIA (R) Cuda compiler driver
+	Copyright (c) 2005-2017 NVIDIA Corporation
+	Built on Fri_Nov__3_21:07:56_CDT_2017
+	Cuda compilation tools, release 9.1, V9.1.85
+
+
+###########################
+# install gcc-6 and g++-6 #
+###########################
+
+# 8. add ubuntu bionic universe (opens text editor) 
+$ sudo nano /etc/apt/sources.list
+
+# copy into file and save:
+deb http://dk.archive.ubuntu.com/ubuntu/ bionic main universe
+
+# 9. install gcc-6 and g++-6 
+$ sudo apt-get update 
+$ sudo apt install gcc-6
+$ sudo apt install g++-6
+
+# 10. (only necessary when multiple versions installed)
+$ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9
+$ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
+$ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 6
+$ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 6
+
+# select gcc-6 and g++-6 in manual mode
+$ sudo update-alternatives --config gcc
+$ sudo update-alternatives --config g++
+
+# 11. check installation
+$ gcc --version
+>>	gcc (Ubuntu 6.4.0-17ubuntu1) 6.4.0 20180424
+	Copyright (C) 2017 Free Software Foundation, Inc.
+	This is free software; see the source for copying conditions.  There is NO
+	warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+$ g++ --version
+>> 	g++ (Ubuntu 6.4.0-17ubuntu1) 6.4.0 20180424
+	Copyright (C) 2017 Free Software Foundation, Inc.
+	This is free software; see the source for copying conditions.  There is NO
+	warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+### finished ###
+
+# (12.) install fftw3 lib, if not already done
+$ sudo apt-get install -y fftw3-dev
+
+
